@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card mb-3 shadow-sm w-100">
+  <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Chấm công bằng camera</h5>
+    <div>
+      <a href="{{ url_for('employee.attendance_history') }}" class="btn btn-sm btn-light">Lịch sử</a>
+    </div>
+  </div>
+  <div class="card-body py-2 d-flex justify-content-center align-items-center" style="min-height:520px;">
+    <div id="camera-container" style="position:relative; width:600px;">
+      <video id="video" width="600" height="450" autoplay class="border mb-2" style="display:block;"></video>
+      <canvas id="overlay" width="600" height="450" style="position:absolute;left:0;top:0;"></canvas>
+      <div id="realtime-name" style="position:absolute;top:10px;left:10px;font-size:1.05em;color:#fff;background:rgba(0,0,0,0.45);padding:4px 10px;border-radius:6px;display:none;"></div>
+    </div>
+    <form id="attendance-form" action="{{ url_for('employee.attendance_camera') }}" method="post" style="display:none;">
+      <input type="hidden" name="image_base64" id="image_base64">
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+let video = document.getElementById('video');
+let overlay = document.getElementById('overlay');
+let overlayCtx = overlay.getContext('2d');
+let nameBox = document.getElementById('realtime-name');
+let isChecking = false;
+let labeledDescriptors = [];
+let faceMatcher = null;
+
+function showError(msg) {
+  let errDiv = document.getElementById('camera-error');
+  if (!errDiv) {
+    errDiv = document.createElement('div');
+    errDiv.id = 'camera-error';
+    errDiv.className = 'alert alert-danger mt-2';
+    document.querySelector('.card-body').prepend(errDiv);
+  }
+  errDiv.innerText = msg;
+}
+
+async function loadEncodings() {
+  try {
+    const res = await fetch("{{ url_for('employee.api_face_encodings') }}");
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      showError('Không có dữ liệu nhận diện khuôn mặt. Vui lòng thêm nhân viên trước!');
+    }
+    labeledDescriptors = data.map(item =>
+      new faceapi.LabeledFaceDescriptors(
+        item.name,
+        [new Float32Array(item.encoding)]
+      )
+    );
+    faceMatcher = labeledDescriptors.length > 0 ? new faceapi.FaceMatcher(labeledDescriptors, 0.5) : null;
+  } catch (e) {
+    showError('Lỗi tải dữ liệu nhận diện: ' + e);
+  }
+}
+
+async function startVideo() {
+  try {
+    await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+    await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+    await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+    await loadEncodings();
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        video.srcObject = stream;
+      })
+      .catch(function(err) {
+        showError('Không thể truy cập camera: ' + err);
+      });
+  } catch (err) {
+    showError('Lỗi khởi tạo nhận diện: ' + err);
+  }
+}
+
+video.addEventListener('play', () => {
+  const displaySize = { width: video.width, height: video.height };
+  faceapi.matchDimensions(overlay, displaySize);
+  setInterval(async () => {
+    let detections = [];
+    try {
+      detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+    } catch (e) {
+      showError('Lỗi nhận diện khuôn mặt: ' + e);
+    }
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+    if (detections.length > 0 && faceMatcher) {
+      const results = detections.map(d => faceMatcher.findBestMatch(d.descriptor));
+      detections.forEach((detection, i) => {
+        const box = detection.detection.box;
+        overlayCtx.strokeStyle = '#00FF00';
+        overlayCtx.lineWidth = 3;
+        overlayCtx.strokeRect(box.x, box.y, box.width, box.height);
+        overlayCtx.font = '18px Arial';
+        overlayCtx.fillStyle = '#00FF00';
+        overlayCtx.fillText(results[i].toString(), box.x, box.y - 8);
+        if (!isChecking && results[i].label !== 'unknown') {
+          isChecking = true;
+          nameBox.innerText = results[i].label;
+          nameBox.style.display = 'block';
+          // Tự động chấm công
+          captureAndSubmit(box);
+        }
+      });
+    } else {
+      nameBox.style.display = 'none';
+      isChecking = false;
+    }
+  }, 500);
+});
+
+async function captureAndSubmit(box) {
+  // Chụp ảnh khuôn mặt đã nhận diện
+  const canvas = document.createElement('canvas');
+  canvas.width = video.width;
+  canvas.height = video.height;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  // Optionally: crop theo box
+  // const faceImg = canvas.getContext('2d').getImageData(box.x, box.y, box.width, box.height);
+  const dataUrl = canvas.toDataURL('image/jpeg');
+  document.getElementById('image_base64').value = dataUrl;
+  document.getElementById('attendance-form').submit();
+}
+
+startVideo();
+</script>
+{% endblock %}

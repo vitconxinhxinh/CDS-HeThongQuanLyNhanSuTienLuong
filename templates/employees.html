@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="py-2 w-100">
+  <!-- Modal thêm nhân viên -->
+  <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addEmployeeModalLabel">Thêm nhân viên mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="add-employee-form" action="{{ url_for('employee.add_employee') }}" method="post" enctype="multipart/form-data">
+          <div class="modal-body py-2">
+            <div class="mb-3">
+              <input name="name" placeholder="Tên nhân viên" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <input name="department" placeholder="Phòng ban" class="form-control">
+            </div>
+            <div class="mb-3">
+              <input name="position" placeholder="Chức vụ" class="form-control">
+            </div>
+            <div class="mb-3">
+              <input name="salary" type="number" placeholder="Lương" class="form-control">
+            </div>
+            <div class="mb-3">
+              <div class="d-flex gap-2">
+                <input name="image" type="file" accept="image/*" class="form-control form-control-sm">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="openCamera()">Camera</button>
+              </div>
+              <input type="hidden" name="image_base64" id="image_base64">
+              <div id="camera-container" style="display:none; margin-top:8px;">
+                <video id="video" width="240" height="180" autoplay class="border mb-2"></video>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-sm btn-success" onclick="capturePhoto()">Chụp</button>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="closeCamera()">Đóng</button>
+                </div>
+                <canvas id="canvas" width="240" height="180" style="display:none;"></canvas>
+                <img id="photo-preview" src="#" style="display:none;max-width:100%;margin-top:8px;" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-success">Thêm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    let videoStream = null;
+    function openCamera() {
+      document.getElementById('camera-container').style.display = 'block';
+      const video = document.getElementById('video');
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          videoStream = stream;
+          video.srcObject = stream;
+        });
+    }
+    function closeCamera() {
+      document.getElementById('camera-container').style.display = 'none';
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+    }
+    function capturePhoto() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const photoPreview = document.getElementById('photo-preview');
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('image_base64').value = dataUrl;
+      photoPreview.src = dataUrl;
+      photoPreview.style.display = 'block';
+    }
+  </script>
+
+  <div class="card mb-3 shadow-sm w-100">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Quản lý nhân sự</h5>
+      <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">Thêm</button>
+    </div>
+  <div class="card-body p-2">
+      <div class="table-responsive mt-2">
+        <table class="table table-striped table-hover align-middle mb-0" style="font-size:1.1rem;">
+          <thead class="table-dark">
+            <tr>
+              <th scope="col">STT</th>
+              <th scope="col">Tên</th>
+              <th scope="col">Phòng ban</th>
+              <th scope="col">Chức vụ</th>
+              <th scope="col">Lương</th>
+              <th scope="col">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in employees %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ e.full_name }}</td>
+                <td>{% if e.department %}{{ e.department.name }}{% else %}<span class="text-muted">Chưa có</span>{% endif %}</td>
+                <td>{{ e.position }}</td>
+                <td>{{ '{:,.0f}'.format(e.base_salary) if e.base_salary else '—' }}₫</td>
+                <td class="text-nowrap">
+                  <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#editEmployeeModal{{ e.id }}">Sửa</button>
+                  <form action="{{ url_for('employee.delete_employee', emp_id=e.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa nhân viên này?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+              <!-- Modal sửa nhân viên -->
+              <div class="modal fade" id="editEmployeeModal{{ e.id }}" tabindex="-1" aria-labelledby="editEmployeeModalLabel{{ e.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editEmployeeModalLabel{{ e.id }}">Sửa nhân viên</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ url_for('employee.edit_employee', emp_id=e.id) }}" method="post">
+                      <div class="modal-body">
+                        <div class="mb-3">
+                          <input name="name" value="{{ e.full_name }}" placeholder="Tên nhân viên" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                          <input name="department" value="{% if e.department %}{{ e.department.name }}{% endif %}" placeholder="Phòng ban" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                          <input name="position" value="{{ e.position }}" placeholder="Chức vụ" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                          <input name="salary" type="number" value="{{ e.base_salary }}" placeholder="Lương" class="form-control">
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-warning">Lưu</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+*** End Patch

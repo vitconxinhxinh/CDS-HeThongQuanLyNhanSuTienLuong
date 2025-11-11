@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h3>Chỉnh sửa chấm công</h3>
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label">Nhân viên</label>
+      <input type="text" class="form-control" value="{{ att.employee.full_name }}" disabled>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Thời gian</label>
+      <input type="text" name="timestamp" class="form-control" value="{{ att.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Trạng thái</label>
+      <select name="status" class="form-select">
+        <option value="IN" {% if att.status=='IN' %}selected{% endif %}>IN</option>
+        <option value="OUT" {% if att.status=='OUT' %}selected{% endif %}>OUT</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Số phút trễ</label>
+      <input type="number" name="late_minutes" class="form-control" value="{{ att.late_minutes or 0 }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Tiền phạt trễ (VND)</label>
+      <input type="number" name="late_penalty" class="form-control" value="{{ att.late_penalty or 0 }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Số phút tăng ca</label>
+      <input type="number" name="overtime_minutes" class="form-control" value="{{ att.overtime_minutes or 0 }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Tiền tăng ca (VND)</label>
+      <input type="number" name="overtime_pay" class="form-control" value="{{ att.overtime_pay or 0 }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Lý do chỉnh sửa</label>
+      <input type="text" name="reason" class="form-control" value="{{ att.reason if att.reason is defined else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Ảnh</label>
+      <input type="text" name="image" class="form-control" value="{{ att.image }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a href="{{ url_for('employee.attendance_history') }}" class="btn btn-secondary">Quay lại</a>
+  </form>
+</div>
+{% endblock %}

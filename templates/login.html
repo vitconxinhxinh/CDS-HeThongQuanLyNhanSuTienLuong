@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập - CDS HR</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+      padding: 20px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    .login-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .login-header .logo {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .login-header p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin: 0;
+    }
+    .login-body {
+      padding: 40px;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #1a1d20;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .form-control {
+      height: 48px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .form-control:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      outline: none;
+    }
+    .form-control::placeholder {
+      color: #999;
+    }
+    .btn-login {
+      height: 48px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    .alert {
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 24px;
+    }
+    .alert-danger {
+      background-color: #fee;
+      color: #c33;
+    }
+    .alert-success {
+      background-color: #efe;
+      color: #3c3;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo">
+          <i class="bi bi-buildings"></i>
+        </div>
+        <h1>CDS HR</h1>
+        <p>Quản lý nhân sự hiệu quả</p>
+      </div>
+      <div class="login-body">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <form method="post">
+          <div class="form-group">
+            <label class="form-label">Tài khoản</label>
+            <input type="text" name="username" class="form-control" placeholder="Nhập tài khoản" required autofocus>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+          </div>
+          <button type="submit" class="btn-login">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="36" viewBox="0 0 240 72">
+  <rect rx="10" width="240" height="72" fill="#0d6efd"/>
+  <text x="36" y="46" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#fff">CDS</text>
+  <circle cx="18" cy="36" r="16" fill="#fff"/>
+  <text x="12" y="43" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#0d6efd">HR</text>
+</svg>

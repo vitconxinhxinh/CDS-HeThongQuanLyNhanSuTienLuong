@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="mb-3">Báo cáo tổng lương thực nhận từng tháng</h3>
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Tháng</th>
+          <th>Tổng lương thực nhận (VNĐ)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in salary_data %}
+        <tr>
+          <td>{{ '%02d/%d' % (row.month, row.year) }}</td>
+          <td>{{ '{:,.0f}'.format(row.total) }}₫</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <canvas id="salaryChart" height="120"></canvas>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="application/json" id="chartData">
+{
+  "labels": {{ ["%02d/%d" % (row.month, row.year) for row in salary_data] | tojson }},
+  "data": {{ [row.total for row in salary_data] | tojson }}
+}
+</script>
+<script>
+const chartData = JSON.parse(document.getElementById('chartData').textContent);
+const ctx = document.getElementById('salaryChart').getContext('2d');
+const data = {
+  labels: chartData.labels,
+  datasets: [{
+    label: 'Tổng lương thực nhận',
+    data: chartData.data,
+    backgroundColor: 'rgba(255, 193, 7, 0.5)',
+    borderColor: 'rgba(255, 193, 7, 1)',
+    borderWidth: 2,
+    fill: true,
+    tension: 0.3
+  }]
+};
+new Chart(ctx, {
+  type: 'line',
+  data: data,
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      title: { display: true, text: 'Biểu đồ tổng lương thực nhận theo tháng' }
+    },
+    scales: {
+      y: { beginAtZero: true }
+    }
+  }
+});
+</script>
+{% endblock %}
