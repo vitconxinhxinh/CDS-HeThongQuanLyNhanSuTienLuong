@@ -85,19 +85,17 @@ Hệ thống **Quản lý Nhân sự và Tiền lương Tích hợp Nhận diệ
 #### Bước 1: Cài đặt môi trường
 - Cập nhật hệ thống
 ```bash 
-    sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 - Cài đặt Python và công cụ ảo hóa môi trường
 ```bash 
-    sudo apt install python3 python3-pip python3-venv -y
+sudo apt install python3 python3-pip python3-venv -y
 ```
 - Tạo và kích hoạt môi trường ảo:
 ```bash 
-    python3 -m venv venv
-    source venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 ```
-
-- Tải JDK từ website Oracle: https://www.oracle.com/java/technologies/javase-downloads.html
 
 #### Bước 2: Cài đặt Oracle Database
 1. Tải Oracle Database Express Edition (XE) từ website chính thức
@@ -105,6 +103,8 @@ Hệ thống **Quản lý Nhân sự và Tiền lương Tích hợp Nhận diệ
 2. Cài đặt theo hướng dẫn
 
 3. Thiết lập mật khẩu cho system user
+
+- Tải JDK từ website Oracle: https://www.oracle.com/java/technologies/javase-downloads.html
 
 #### Bước 3: Clone mã nguồn
  ```bash
@@ -223,5 +223,6 @@ Nếu có bất kỳ thắc mắc hay góp ý nào, vui lòng liên hệ:
 - **📍 Địa chỉ:** Hà Đông, Hà Nội  
 - **📧 Email:** tavietanh101004@gmail.com 
 ---
+
 
 © 2023 - Khoa Công nghệ Thông tin - Đại học Đại Nam 
